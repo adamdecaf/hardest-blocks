@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Most Difficult Bitcoin Blocks</title>
+    <style>
+      body {
+          font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #f2a900;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .block-list {
+            background-color: #262626;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #f2a900;
+        }
+        .block-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #333333;
+            border-radius: 3px;
+        }
+        .block-item:last-child {
+            margin-bottom: 0;
+        }
+        .hash {
+            color: #f2a900;
+            font-family: monospace;
+            word-break: break-all;
+            text-decoration: none;
+        }
+        .hash:hover {
+            color: #ffd700;
+        }
+        .difficulty {
+            color: #cccccc;
+            margin-top: 5px;
+        }
+        .latest {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+            color: #999999;
+        }
+        .latest-hash {
+            color: #f2a900;
+            font-family: monospace;
+        }
+        .loading {
+            text-align: center;
+            color: #f2a900;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Hardest Bitcoin Blocks</h1>
+        <div class="latest" id="latestBlock">
+            <span class="loading">Loading latest block...</span>
+        </div>
+        <div class="block-list" id="blockList">
+            <div class="loading">Loading blocks...</div>
+        </div>
+    </div>
+
+    <script>
+        // Load blocks from data.json
+        fetch('/data.json')
+            .then(response => response.json())
+            .then(data => {
+                const blockList = document.getElementById('blockList');
+                blockList.innerHTML = ''; // Clear loading message
+
+                data.LargestDifficulties.forEach(block => {
+                    const blockDiv = document.createElement('div');
+                    blockDiv.className = 'block-item';
+
+                    const link = document.createElement('a');
+                    link.href = `https://mempool.space/block/${block.Hash}`;
+                    link.className = 'hash';
+                    link.textContent = block.Hash;
+                    link.target = "_blank";
+
+                    const difficulty = document.createElement('div');
+                    difficulty.className = 'difficulty';
+                    difficulty.textContent = `Difficulty: ${block.Difficulty.RawValue}`;
+
+                    blockDiv.appendChild(link);
+                    blockDiv.appendChild(difficulty);
+                    blockList.appendChild(blockDiv);
+                });
+            })
+            .catch(error => {
+                console.error('Error loading blocks:', error);
+                document.getElementById('blockList').innerHTML =
+                    '<div class="loading">Error loading blocks</div>';
+            });
+
+        // Load latest block from LATEST
+        fetch('/LATEST')
+            .then(response => response.text())
+            .then(hash => {
+                const latestDiv = document.getElementById('latestBlock');
+                latestDiv.innerHTML = `Latest Block Analyzed: `;
+                latestDiv.innerHTML += `<a class="latest-hash" target="_blank"href="https://mempool.space/block/${hash.trim()}">${hash.trim()}</a>`;
+            })
+            .catch(error => {
+                console.error('Error loading latest block:', error);
+                document.getElementById('latestBlock').innerHTML =
+                    '<span class="loading">Error loading latest block</span>';
+            });
+    </script>
+</body>
+</html>
