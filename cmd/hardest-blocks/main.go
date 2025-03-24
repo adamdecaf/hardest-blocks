@@ -25,13 +25,13 @@ const (
 func main() {
 	// Read the latest block hash and the current data
 	// Look for blocks on the chain until we find one without NextBlock
-	latestHashFilepath := filepath.Join("site", "LATEST")
+	latestHashFilepath := filepath.Join("docs", "LATEST")
 	latestHash, err := readFile(latestHashFilepath)
 	if err != nil {
 		log.Fatalf("ERROR reading last block processed: %v", err)
 	}
 
-	dataFilepath := filepath.Join("site", "data.json")
+	dataFilepath := filepath.Join("docs", "data.json")
 	data, err := readLatestData(dataFilepath)
 	if err != nil {
 		log.Fatalf("ERROR reading hardest blocks data: %v", err)
