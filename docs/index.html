@@ -78,7 +78,7 @@
 
     <script>
         // Load blocks from data.json
-        fetch('/data.json')
+        fetch('./data.json')
             .then(response => response.json())
             .then(data => {
                 const blockList = document.getElementById('blockList');
@@ -110,7 +110,7 @@
             });
 
         // Load latest block from LATEST
-        fetch('/LATEST')
+        fetch('./LATEST')
             .then(response => response.text())
             .then(hash => {
                 const latestDiv = document.getElementById('latestBlock');
