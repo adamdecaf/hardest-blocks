@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Most Difficult Bitcoin Blocks</title>
     <style>
-      body {
-          font-family: Arial, sans-serif;
+        body {
+            font-family: Arial, sans-serif;
             background-color: #1a1a1a;
             color: #ffffff;
             margin: 0;
@@ -76,51 +76,84 @@
         </div>
     </div>
 
+    <script src="./wasm_exec.js"></script>
     <script>
-        // Load blocks from data.json
-        fetch('./data.json')
-            .then(response => response.json())
-            .then(data => {
-                const blockList = document.getElementById('blockList');
-                blockList.innerHTML = ''; // Clear loading message
-
-                data.LargestDifficulties.forEach(block => {
-                    const blockDiv = document.createElement('div');
-                    blockDiv.className = 'block-item';
-
-                    const link = document.createElement('a');
-                    link.href = `https://mempool.space/block/${block.Hash}`;
-                    link.className = 'hash';
-                    link.textContent = block.Hash;
-                    link.target = "_blank";
-
-                    const difficulty = document.createElement('div');
-                    difficulty.className = 'difficulty';
-                    difficulty.textContent = `Difficulty: ${block.Difficulty.RawValue}`;
-
-                    blockDiv.appendChild(link);
-                    blockDiv.appendChild(difficulty);
-                    blockList.appendChild(blockDiv);
-                });
-            })
-            .catch(error => {
-                console.error('Error loading blocks:', error);
-                document.getElementById('blockList').innerHTML =
-                    '<div class="loading">Error loading blocks</div>';
+        async function loadWasm() {
+            const go = new Go();
+            const result = await WebAssembly.instantiateStreaming(
+                fetch("./hardest-blocks.wasm"),
+                go.importObject
+            );
+            go.run(result.instance);
+            return new Promise(resolve => {
+                // Wait until formatDifficulty is available
+                const check = () => {
+                    if (typeof formatDifficulty === 'function') {
+                        resolve();
+                    } else {
+                        setTimeout(check, 100);
+                    }
+                };
+                check();
             });
+        }
 
-        // Load latest block from LATEST
-        fetch('./LATEST')
-            .then(response => response.text())
-            .then(hash => {
-                const latestDiv = document.getElementById('latestBlock');
-                latestDiv.innerHTML = `Latest Block Analyzed: `;
-                latestDiv.innerHTML += `<a class="latest-hash" target="_blank"href="https://mempool.space/block/${hash.trim()}">${hash.trim()}</a>`;
+        // Load WASM first, then process data
+        loadWasm()
+            .then(() => {
+                // Load blocks from data.json
+                fetch('./data.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        const blockList = document.getElementById('blockList');
+                        blockList.innerHTML = ''; // Clear loading message
+
+                        data.LargestDifficulties.forEach(block => {
+                            const blockDiv = document.createElement('div');
+                            blockDiv.className = 'block-item';
+
+                            const link = document.createElement('a');
+                            link.href = `https://mempool.space/block/${block.Hash}`;
+                            link.className = 'hash';
+                            link.textContent = block.Hash;
+                            link.target = "_blank";
+
+                            const difficulty = document.createElement('div');
+                            difficulty.className = 'difficulty';
+
+                            // Use WASM function to format difficulty
+                            const formattedDifficulty = formatDifficulty(block.Difficulty.RawValue.toString());
+                            difficulty.textContent = `Difficulty: ${formattedDifficulty}`;
+
+                            blockDiv.appendChild(link);
+                            blockDiv.appendChild(difficulty);
+                            blockList.appendChild(blockDiv);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error loading blocks:', error);
+                        document.getElementById('blockList').innerHTML =
+                            '<div class="loading">Error loading blocks</div>';
+                    });
+
+                // Load latest block from LATEST
+                fetch('./LATEST')
+                    .then(response => response.text())
+                    .then(hash => {
+                        const latestDiv = document.getElementById('latestBlock');
+                        latestDiv.innerHTML = `Latest Block Analyzed: `;
+                        latestDiv.innerHTML += `<a class="latest-hash" target="_blank" href="https://mempool.space/block/${hash.trim()}">${hash.trim()}</a>`;
+                    })
+                    .catch(error => {
+                        console.error('Error loading latest block:', error);
+                        document.getElementById('latestBlock').innerHTML =
+                            '<span class="loading">Error loading latest block</span>';
+                    });
             })
             .catch(error => {
-                console.error('Error loading latest block:', error);
-                document.getElementById('latestBlock').innerHTML =
-                    '<span class="loading">Error loading latest block</span>';
+                console.error('Error loading WASM:', error);
+                document.getElementById('blockList').innerHTML =
+                    '<div class="loading">Error loading WASM module</div>';
             });
     </script>
 </body>
