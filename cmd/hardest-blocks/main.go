@@ -19,7 +19,7 @@ import (
 const (
 	blockHistory = 1000 // Keep the largest 1000 blocks
 
-	iterationDelay = time.Second
+	iterationDelay = 500 * time.Millisecond
 )
 
 func main() {
