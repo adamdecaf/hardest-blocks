@@ -5,70 +5,177 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Most Difficult Bitcoin Blocks</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #1a1a1a;
             color: #ffffff;
-            margin: 0;
+            line-height: 1.6;
             padding: 20px;
+            min-height: 100vh;
         }
+
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
         }
+
         h1 {
             color: #f2a900;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            font-weight: 600;
         }
+
         .block-list {
             background-color: #262626;
-            padding: 20px;
-            border-radius: 5px;
+            padding: 1.5rem;
+            border-radius: 8px;
             border: 1px solid #f2a900;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
         }
+
         .block-item {
-            padding: 15px;
-            margin-bottom: 15px;
+            padding: 1rem;
+            margin-bottom: 1rem;
             background-color: #333333;
-            border-radius: 3px;
+            border-radius: 5px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+
+        .block-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        }
+
         .block-item:last-child {
             margin-bottom: 0;
         }
-        .height, .created {
-            color: #cccccc;
-            float: right;
-        }
+
         .hash {
             color: #f2a900;
             font-family: monospace;
             word-break: break-all;
             text-decoration: none;
+            font-size: 1rem;
+            display: inline; /* Default: inline with height on desktop */
         }
+
         .hash:hover {
             color: #ffd700;
+            text-decoration: underline;
         }
-        .created {
-            margin-top: 5px;
-        }
-        .difficulty {
+
+        .height {
             color: #cccccc;
-            margin-top: 5px;
+            font-size: 0.95rem;
+            float: right; /* Default: float to the right on desktop */
         }
+
+        .created, .difficulty {
+            color: #cccccc;
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+        }
+
         .latest {
             text-align: center;
-            margin-bottom: 30px;
-            font-size: 0.9em;
+            margin-bottom: 2rem;
+            font-size: 1rem;
             color: #999999;
         }
+
         .latest-hash {
             color: #f2a900;
             font-family: monospace;
+            word-break: break-all;
+            text-decoration: none;
         }
+
+        .latest-hash:hover {
+            color: #ffd700;
+            text-decoration: underline;
+        }
+
         .loading {
             text-align: center;
             color: #f2a900;
+            font-size: 1rem;
+            padding: 1rem;
+        }
+
+        /* Desktop-specific adjustments */
+        @media (min-width: 769px) {
+            .block-item {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .hash {
+                flex: 1 1 auto;
+                min-width: 0; /* Prevents overflow in flex */
+            }
+
+            .height {
+                flex: 0 0 auto;
+            }
+
+            .created, .difficulty {
+                flex: 1 0 100%; /* Takes full width, stacks below */
+            }
+        }
+
+        /* Mobile-specific adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .block-list {
+                padding: 1rem;
+            }
+
+            .block-item {
+                padding: 0.75rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .block-item * {
+                display: block;
+                width: 100%;
+                float: none;
+                clear: both;
+            }
+
+            .hash {
+                font-size: 0.9rem;
+            }
+
+            .height {
+                margin-top: 0.5rem;
+            }
+
+            .created, .difficulty {
+                font-size: 0.9rem;
+            }
+
+            .latest {
+                font-size: 0.9rem;
+                margin-bottom: 1.5rem;
+            }
         }
     </style>
 </head>
@@ -80,6 +187,10 @@
         </div>
         <div class="block-list" id="blockList">
             <div class="loading">Loading blocks...</div>
+        </div>
+        <div class="latest" style="margin-top: 10px; text-align: center; width: 100%;">
+          Created by <a class="latest-hash" href="https://github.com/adamdecaf" target="_blank">@adamdecaf</a>.
+          Donate BTC to <code>36UswrkLjUPaSmfpRP2fPwVTDdc4JRCyhK</code>
         </div>
     </div>
 
@@ -93,7 +204,6 @@
             );
             go.run(result.instance);
             return new Promise(resolve => {
-                // Wait until formatDifficulty is available
                 const check = () => {
                     if (typeof formatDifficulty === 'function') {
                         resolve();
@@ -105,15 +215,13 @@
             });
         }
 
-        // Load WASM first, then process data
         loadWasm()
             .then(() => {
-                // Load blocks from data.json
                 fetch('./data.json')
                     .then(response => response.json())
                     .then(data => {
                         const blockList = document.getElementById('blockList');
-                        blockList.innerHTML = ''; // Clear loading message
+                        blockList.innerHTML = '';
 
                         data.LargestDifficulties.forEach(block => {
                             const blockDiv = document.createElement('div');
@@ -131,27 +239,22 @@
                             link.textContent = block.Hash;
                             link.target = "_blank";
 
-                            const br = document.createElement('br');
-
                             const created = document.createElement('div');
                             created.className = 'created';
                             if (block.Raw.Time !== undefined) {
-                                var d = new Date(block.Raw.Time);
-                                if (d.getYear() >= 109) { // 2009 or later
-                                  created.textContent = `Created: ${d.toLocaleString()}`;
+                                const d = new Date(block.Raw.Time);
+                                if (d.getYear() >= 109) {
+                                    created.textContent = `Created: ${d.toLocaleString()}`;
                                 }
                             }
 
                             const difficulty = document.createElement('div');
                             difficulty.className = 'difficulty';
-
-                            // Use WASM function to format difficulty
                             const formattedDifficulty = formatDifficulty(block.Difficulty.RawValue.toString());
                             difficulty.textContent = `Difficulty: ${formattedDifficulty}`;
 
                             blockDiv.appendChild(link);
                             blockDiv.appendChild(height);
-                            blockDiv.appendChild(br);
                             blockDiv.appendChild(created);
                             blockDiv.appendChild(difficulty);
                             blockList.appendChild(blockDiv);
@@ -163,7 +266,6 @@
                             '<div class="loading">Error loading blocks</div>';
                     });
 
-                // Load latest block from LATEST
                 fetch('./LATEST')
                     .then(response => response.text())
                     .then(hash => {
