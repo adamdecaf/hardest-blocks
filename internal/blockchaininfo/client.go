@@ -32,13 +32,26 @@ type RawBlock struct {
 	Hash          string
 	PreviousBlock string
 	NextBlock     string
+
+	Time   time.Time
+	Height int64
 }
+
+var (
+	possibleTimeFormats = []string{
+		time.RFC3339,
+		"2006-01-02T15:04:05-07:00",
+	}
+)
 
 func (r *RawBlock) UnmarshalJSON(data []byte) error {
 	var aux struct {
 		Hash      string   `json:"hash"`
 		PrevBlock string   `json:"prev_block"`
 		NextBlock []string `json:"next_block"`
+
+		Time   any   `json:"time"`
+		Height int64 `json:"height"`
 	}
 
 	err := json.NewDecoder(bytes.NewReader(data)).Decode(&aux)
@@ -48,9 +61,28 @@ func (r *RawBlock) UnmarshalJSON(data []byte) error {
 
 	r.Hash = aux.Hash
 	r.PreviousBlock = aux.PrevBlock
+	r.Height = aux.Height
 
 	if len(aux.NextBlock) > 0 {
 		r.NextBlock = aux.NextBlock[0]
+	}
+
+	switch t := aux.Time.(type) {
+	case string:
+		for _, format := range possibleTimeFormats {
+			r.Time, err = time.Parse(format, t)
+			if err == nil {
+				break
+			}
+		}
+
+	case float64:
+		r.Time = time.Unix(int64(t), 0)
+	default:
+		return fmt.Errorf("unexpected time type: %T - %v", t, t)
+	}
+	if err != nil {
+		return fmt.Errorf("parsing time: %w", err)
 	}
 
 	return nil

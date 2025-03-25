@@ -36,6 +36,10 @@
         .block-item:last-child {
             margin-bottom: 0;
         }
+        .height, .created {
+            color: #cccccc;
+            float: right;
+        }
         .hash {
             color: #f2a900;
             font-family: monospace;
@@ -44,6 +48,9 @@
         }
         .hash:hover {
             color: #ffd700;
+        }
+        .created {
+            margin-top: 5px;
         }
         .difficulty {
             color: #cccccc;
@@ -112,11 +119,28 @@
                             const blockDiv = document.createElement('div');
                             blockDiv.className = 'block-item';
 
+                            const height = document.createElement('span');
+                            height.className = 'height';
+                            if (block.Raw.Height !== undefined) {
+                                height.textContent = `Height: ${block.Raw.Height}`;
+                            }
+
                             const link = document.createElement('a');
                             link.href = `https://mempool.space/block/${block.Hash}`;
                             link.className = 'hash';
                             link.textContent = block.Hash;
                             link.target = "_blank";
+
+                            const br = document.createElement('br');
+
+                            const created = document.createElement('div');
+                            created.className = 'created';
+                            if (block.Raw.Time !== undefined) {
+                                var d = new Date(block.Raw.Time);
+                                if (d.getYear() >= 109) { // 2009 or later
+                                  created.textContent = `Created: ${d.toLocaleString()}`;
+                                }
+                            }
 
                             const difficulty = document.createElement('div');
                             difficulty.className = 'difficulty';
@@ -126,6 +150,9 @@
                             difficulty.textContent = `Difficulty: ${formattedDifficulty}`;
 
                             blockDiv.appendChild(link);
+                            blockDiv.appendChild(height);
+                            blockDiv.appendChild(br);
+                            blockDiv.appendChild(created);
                             blockDiv.appendChild(difficulty);
                             blockList.appendChild(blockDiv);
                         });
