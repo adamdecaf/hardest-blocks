@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -88,19 +89,44 @@ func (r *RawBlock) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+const (
+	maxRetries = 3
+	baseDelay  = 500 * time.Millisecond
+)
+
 func (c *client) BlockInfo(ctx context.Context, hash string) (RawBlock, error) {
 	address := fmt.Sprintf("https://blockchain.info/rawblock/%s", hash)
 
-	resp, err := c.httpClient.Get(address)
-	if err != nil {
-		return RawBlock{}, fmt.Errorf("getting raw block: %w", err)
-	}
-	defer resp.Body.Close()
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		resp, err := c.httpClient.Get(address)
+		if err != nil {
+			if strings.Contains(err.Error(), "context deadline exceeded") || strings.Contains(err.Error(), "Client.Timeout exceeded") {
+				if attempt < maxRetries-1 {
+					backoffDuration := baseDelay * time.Duration(1<<attempt)
+					time.Sleep(backoffDuration)
+					continue
+				}
+			}
+			return RawBlock{}, fmt.Errorf("getting raw block: %w", err)
+		}
 
-	var block RawBlock
-	err = json.NewDecoder(resp.Body).Decode(&block)
-	if err != nil {
-		return block, err
+		defer resp.Body.Close()
+
+		var block RawBlock
+		err = json.NewDecoder(resp.Body).Decode(&block)
+		if err != nil {
+			if strings.Contains(err.Error(), "invalid character") {
+				if attempt < maxRetries-1 {
+					backoffDuration := baseDelay * time.Duration(1<<attempt)
+					time.Sleep(backoffDuration)
+					continue
+				}
+			}
+			return block, fmt.Errorf("decoding response: %w", err)
+		}
+
+		return block, nil
 	}
-	return block, nil
+
+	return RawBlock{}, fmt.Errorf("max retries exceeded for BlockInfo")
 }
