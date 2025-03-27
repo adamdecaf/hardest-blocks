@@ -115,7 +115,8 @@ func (c *client) BlockInfo(ctx context.Context, hash string) (RawBlock, error) {
 		var block RawBlock
 		err = json.NewDecoder(resp.Body).Decode(&block)
 		if err != nil {
-			if strings.Contains(err.Error(), "invalid character") {
+			switch {
+			case strings.Contains(err.Error(), "stream error"), strings.Contains(err.Error(), "invalid character"):
 				if attempt < maxRetries-1 {
 					backoffDuration := baseDelay * time.Duration(1<<attempt)
 					time.Sleep(backoffDuration)
