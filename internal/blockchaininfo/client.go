@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/go-retryablehttp"
 )
 
 type Client interface {
@@ -20,13 +22,17 @@ func NewClient(httpClient *http.Client) Client {
 		Timeout: 20 * time.Second,
 	})
 
+	cc := retryablehttp.NewClient()
+	cc.HTTPClient = httpClient
+	cc.Logger = nil
+
 	return &client{
-		httpClient: httpClient,
+		httpClient: cc,
 	}
 }
 
 type client struct {
-	httpClient *http.Client
+	httpClient *retryablehttp.Client
 }
 
 type RawBlock struct {
