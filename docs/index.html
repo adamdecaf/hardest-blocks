@@ -134,6 +134,38 @@
             padding: 1rem;
         }
 
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+            background-color: #f2a900;
+            color: #1a1a1a;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .pagination button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background-color: #ffd700;
+        }
+
+        .pagination span {
+            padding: 8px 16px;
+            color: #cccccc;
+        }
+
         /* Desktop-specific adjustments */
         @media (min-width: 769px) {
             .block-item {
@@ -212,6 +244,7 @@
         <div class="block-list" id="blockList">
             <div class="loading">Loading blocks...</div>
         </div>
+        <div class="pagination" id="pagination"></div>
         <div class="notable">
           <h1>Notable blocks</h1>
           <table>
@@ -270,50 +303,99 @@
             });
         }
 
+        const BLOCKS_PER_PAGE = 50;
+        let currentPage = 1;
+        let totalPages = 1;
+        let allBlocks = [];
+
+        function renderBlocks(blocks, page) {
+            const blockList = document.getElementById('blockList');
+            blockList.innerHTML = '';
+
+            const start = (page - 1) * BLOCKS_PER_PAGE;
+            const end = start + BLOCKS_PER_PAGE;
+            const pageBlocks = blocks.slice(start, end);
+
+            pageBlocks.forEach(block => {
+                const blockDiv = document.createElement('div');
+                blockDiv.className = 'block-item';
+
+                const height = document.createElement('span');
+                height.className = 'height';
+                if (block.Raw.Height !== undefined) {
+                    height.textContent = `Height: ${block.Raw.Height}`;
+                }
+
+                const link = document.createElement('a');
+                link.href = `https://mempool.space/block/${block.Hash}`;
+                link.className = 'hash';
+                link.textContent = block.Hash;
+                link.target = "_blank";
+
+                const created = document.createElement('div');
+                created.className = 'created';
+                if (block.Raw.Time !== undefined) {
+                    const d = new Date(block.Raw.Time);
+                    if (d.getYear() >= 109) {
+                        created.textContent = `Created: ${d.toLocaleString()}`;
+                    }
+                }
+
+                const difficulty = document.createElement('div');
+                difficulty.className = 'difficulty';
+                const formattedDifficulty = formatDifficulty(block.Difficulty.RawValue.toString());
+                difficulty.textContent = `Difficulty: ${formattedDifficulty}`;
+
+                blockDiv.appendChild(link);
+                blockDiv.appendChild(height);
+                blockDiv.appendChild(created);
+                blockDiv.appendChild(difficulty);
+                blockList.appendChild(blockDiv);
+            });
+
+            renderPagination();
+        }
+
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            const prevButton = document.createElement('button');
+            prevButton.textContent = 'Previous';
+            prevButton.disabled = currentPage === 1;
+            prevButton.onclick = () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderBlocks(allBlocks, currentPage);
+                }
+            };
+
+            const pageInfo = document.createElement('span');
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'Next';
+            nextButton.disabled = currentPage === totalPages;
+            nextButton.onclick = () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderBlocks(allBlocks, currentPage);
+                }
+            };
+
+            pagination.appendChild(prevButton);
+            pagination.appendChild(pageInfo);
+            pagination.appendChild(nextButton);
+        }
+
         loadWasm()
             .then(() => {
                 fetch('./data.json')
                     .then(response => response.json())
                     .then(data => {
-                        const blockList = document.getElementById('blockList');
-                        blockList.innerHTML = '';
-
-                        data.LargestDifficulties.forEach(block => {
-                            const blockDiv = document.createElement('div');
-                            blockDiv.className = 'block-item';
-
-                            const height = document.createElement('span');
-                            height.className = 'height';
-                            if (block.Raw.Height !== undefined) {
-                                height.textContent = `Height: ${block.Raw.Height}`;
-                            }
-
-                            const link = document.createElement('a');
-                            link.href = `https://mempool.space/block/${block.Hash}`;
-                            link.className = 'hash';
-                            link.textContent = block.Hash;
-                            link.target = "_blank";
-
-                            const created = document.createElement('div');
-                            created.className = 'created';
-                            if (block.Raw.Time !== undefined) {
-                                const d = new Date(block.Raw.Time);
-                                if (d.getYear() >= 109) {
-                                    created.textContent = `Created: ${d.toLocaleString()}`;
-                                }
-                            }
-
-                            const difficulty = document.createElement('div');
-                            difficulty.className = 'difficulty';
-                            const formattedDifficulty = formatDifficulty(block.Difficulty.RawValue.toString());
-                            difficulty.textContent = `Difficulty: ${formattedDifficulty}`;
-
-                            blockDiv.appendChild(link);
-                            blockDiv.appendChild(height);
-                            blockDiv.appendChild(created);
-                            blockDiv.appendChild(difficulty);
-                            blockList.appendChild(blockDiv);
-                        });
+                        allBlocks = data.LargestDifficulties;
+                        totalPages = Math.ceil(allBlocks.length / BLOCKS_PER_PAGE);
+                        renderBlocks(allBlocks, currentPage);
                     })
                     .catch(error => {
                         console.error('Error loading blocks:', error);
