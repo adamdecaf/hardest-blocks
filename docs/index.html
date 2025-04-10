@@ -33,6 +33,33 @@
             font-weight: 600;
         }
 
+        .intro {
+            margin-bottom: 2rem;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            color: #999999;
+            text-align: left !important;
+            width: 90%;
+        }
+
+        .intro p {
+            margin-bottom: 20px;
+            margin-left: 5%;
+        }
+
+        .intro ul {
+            margin-left: 2%;
+            list-style-type: none;
+        }
+
+        .intro a {
+            color: #f2a900;
+        }
+
+        .intro span {
+            margin-left: 1.5%;
+        }
+
         .block-list {
             background-color: #262626;
             padding: 1.5rem;
@@ -85,7 +112,6 @@
         }
 
         .latest {
-            text-align: center;
             margin-bottom: 2rem;
             font-size: 1rem;
             color: #999999;
@@ -190,6 +216,10 @@
             .created, .difficulty {
                 flex: 1 0 100%; /* Takes full width, stacks below */
             }
+
+            .intro-links, #latestBlock {
+                margin-left: 4.5%;
+            }
         }
 
         /* Mobile-specific adjustments */
@@ -241,8 +271,21 @@
 <body>
     <div class="container">
         <h1>Hardest Bitcoin Blocks</h1>
+        <div class="intro">
+          <p>
+            This list ranks Bitcoin blocks based on the difficulty of their hashes - the cryptographic puzzles miners solve to add blocks to the blockchain.
+            Difficulty is measured by the number of leading zeros in a block's binary hash, with more zeros indicating a tougher solution. Miners compete
+            to find a hash that exceeds the network's current difficulty threshold, a task that requires both computational power and a dash of luck.
+          </p>
+          <p>
+            These exceptionally rare blocks represent extraordinary instances of mining luck - comparable to winning a mathematical lottery.
+            They serve as a historical record of the most statistically improbable mining achievements in Bitcoin's history.
+          </p>
+        </div>
+        <div class="intro intro-links">
+          Network Stats: <a href="https://mempool.space/mining" target="_blank">Mining Difficulty</a>
+        </div>
         <div class="latest" id="latestBlock">
-            <span class="loading">Loading latest block...</span>
         </div>
         <div class="block-list" id="blockList">
             <div class="loading">Loading blocks...</div>
