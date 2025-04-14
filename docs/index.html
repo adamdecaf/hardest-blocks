@@ -297,30 +297,42 @@
             <tr class="notable-dates">
               <td><a href="https://mempool.space/block/000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f" target="_blank">Genesis Block</a></td>
               <td>2.54K</td>
+              <td class="notable-date">2009-01-03 12:15:05</td>
             </tr>
             <tr class="notable-dates">
               <td><a href="https://mempool.space/block/000000000000013af45c4ac4814ab12a69a6e65a40db0e1e3844fcb2ecaddb24" target="_blank">First <strong>M</strong> block</a></td>
               <td>13.64M</td>
-              </tr>
+              <td class="notable-date">2010-08-10 05:21:27</td>
+            </tr>
             <tr class="notable-dates">
               <td><a href="https://mempool.space/block/00000000000000001e8d6829a8a21adc5d38d0a473b144b6765798e61f98bd1d" target="_blank">First <strong>G</strong> block</a></td>
               <td>35.99G</td>
-              </tr>
+              <td class="notable-date">2011-05-21 12:26:31</td>
+            </tr>
             <tr class="notable-dates">
               <td><a href="https://mempool.space/block/0000000000000000004bb6e7e2661661ba9809062d90c3121933d6d02c8bd763" target="_blank">First <strong>T</strong> block</a></td>
               <td>3.72T</td>
-              </tr>
+              <td class="notable-date">2013-09-16 01:35:37</td>
+            </tr>
             <tr class="notable-dates">
               <td><a href="https://mempool.space/block/000000000000000000028c32e6952731326747bae4be8db0f832d6eea0362050" target="_blank">First <strong>100T</strong> block</a></td>
               <td>110.48T</td>
+              <td class="notable-date">2013-10-27 09:49:44</td>
             </tr>
             <tr class="notable-dates">
               <td><a href="https://mempool.space/block/000000000000000000002d414bb8f9175ba6c6563721e1ba2c1373c2bd94f29f" target="_blank">First <strong>P</strong> block</a></td>
               <td>1.59P</td>
+              <td class="notable-date">2014-12-14 03:28:16</td>
             </tr>
             <tr class="notable-dates">
               <td><a href="https://mempool.space/block/0000000000000000000000ab789f6d71d9642ae3f697975ccd00afcb98fe6bd2" target="_blank">First <strong>100P</strong> block</a></td>
               <td>107.58P</td>
+              <td class="notable-date">2018-03-30 18:25:48</td>
+            </tr>
+            <tr class="notable-dates">
+              <td><a href="https://mempool.space/block/000000000000000000000003681c2df35533c9578fb6aace040b0dfe0d446413" target="_blank">First <strong>E</strong> block</a></td>
+              <td>5.41E</td>
+              <td class="notable-date">2020-06-15 04:23:52</td>
             </tr>
           </table>
         </div>
@@ -331,13 +343,10 @@
     </div>
 
     <script>
-      var tr = document.querySelectorAll(".notable-dates");
-      const notableDates = ["2009-01-03 12:15:05", "2010-08-10 05:21:27", "2011-05-21 12:26:31", "2013-09-16 01:35:37", "2013-10-27 09:49:44", "2014-12-14 03:28:16", "2018-03-30 18:25:48"];
-      notableDates.forEach((ts, idx) => {
-        var td = document.createElement("td");
-        var d = new Date(ts)
-        td.textContent = d.toLocaleString();
-        tr[idx].append(td);
+      var dates = document.querySelectorAll(".notable-date");
+      dates.forEach(dt => {
+        var d = new Date(dt.textContent.trim());
+        dt.textContent = d.toLocaleString();
       });
     </script>
 
