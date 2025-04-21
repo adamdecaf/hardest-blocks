@@ -29,8 +29,11 @@ jobs:
 
       - name: Commit updates
         run: |
-          git config user.name "hardest-blocks-bot"
-          git config user.email "bot@adamkshannon.com"
-          git add docs/
-          git commit -m "docs: periodic update"
-          git push origin master
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "hardest-blocks-bot"
+            git config user.email "bot@adamkshannon.com"
+
+            git add docs/
+            git commit -m "docs: periodic update"
+            git push origin master
+          fi
