@@ -85,6 +85,8 @@ func (r *RawBlock) UnmarshalJSON(data []byte) error {
 
 	case float64:
 		r.Time = time.Unix(int64(t), 0)
+	case nil:
+		// do nothing
 	default:
 		return fmt.Errorf("unexpected time type: %T - %v", t, t)
 	}

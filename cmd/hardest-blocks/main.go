@@ -47,6 +47,11 @@ func main() {
 			log.Fatalf("ERROR getting block: %v", err)
 		}
 
+		if block.Hash == "" {
+			log.Printf("INFO: No more blocks to check")
+			break
+		}
+
 		diff, err := blockchain.HashDifficulty(block.Hash)
 		if err != nil {
 			log.Fatalf("ERROR calculating block difficulty: %v", err)
