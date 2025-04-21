@@ -1,0 +1,36 @@
+name: Scan newest blocks
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0/10 * * * *"
+
+permissions:
+    contents: write
+
+jobs:
+  generate:
+    name: Check blocks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+        id: go
+
+      - name: Run
+        run: make generate
+
+      - name: Commit updates
+        run: |
+          git config user.name "hardest-blocks-bot"
+          git config user.email "bot@adamkshannon.com"
+          git add docs/
+          git commit -m "docs: periodic update"
+          git push origin master
