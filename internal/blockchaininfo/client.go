@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -73,6 +74,7 @@ func (r *RawBlock) UnmarshalJSON(data []byte) error {
 
 	r.Hash = aux.Hash
 	r.PreviousBlock = aux.PrevBlock
+	r.MainChain = aux.MainChain
 	r.Height = aux.Height
 
 	if len(aux.NextBlock) > 0 {
