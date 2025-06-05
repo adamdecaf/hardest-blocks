@@ -5,6 +5,7 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -40,6 +41,8 @@ type RawBlock struct {
 	PreviousBlock string
 	NextBlock     string
 
+	MainChain bool
+
 	Time   time.Time
 	Height int64
 }
@@ -56,6 +59,8 @@ func (r *RawBlock) UnmarshalJSON(data []byte) error {
 		Hash      string   `json:"hash"`
 		PrevBlock string   `json:"prev_block"`
 		NextBlock []string `json:"next_block"`
+
+		MainChain bool `json:"main_chain"`
 
 		Time   any   `json:"time"`
 		Height int64 `json:"height"`
@@ -136,8 +141,12 @@ func (c *client) BlockInfo(ctx context.Context, hash string) (RawBlock, error) {
 			return block, fmt.Errorf("decoding response: %w", err)
 		}
 
+		if !block.MainChain {
+			return block, errors.New("block not in main chain")
+		}
+
 		return block, nil
 	}
 
-	return RawBlock{}, fmt.Errorf("max retries exceeded for BlockInfo")
+	return RawBlock{}, errors.New("max retries exceeded for BlockInfo")
 }
