@@ -108,6 +108,10 @@ const (
 	baseDelay  = 500 * time.Millisecond
 )
 
+var (
+	ErrNotMainChain = errors.New("block not in main chain")
+)
+
 func (c *client) BlockInfo(ctx context.Context, hash string) (RawBlock, error) {
 	address := fmt.Sprintf("https://blockchain.info/rawblock/%s", hash)
 
@@ -143,7 +147,7 @@ func (c *client) BlockInfo(ctx context.Context, hash string) (RawBlock, error) {
 		}
 
 		if !block.MainChain {
-			return block, errors.New("block not in main chain")
+			return block, ErrNotMainChain
 		}
 
 		return block, nil

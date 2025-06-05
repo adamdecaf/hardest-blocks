@@ -5,6 +5,7 @@ import (
 	"cmp"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -44,6 +45,11 @@ func main() {
 	for {
 		block, err := chainclient.BlockInfo(ctx, latestHash)
 		if err != nil {
+			if errors.Is(err, blockchaininfo.ErrNotMainChain) {
+				log.Printf("WARN: block %s not in main chain", block.Hash)
+				return
+			}
+
 			log.Fatalf("ERROR getting block: %v", err)
 		}
 
