@@ -47,7 +47,7 @@ func main() {
 		if err != nil {
 			if errors.Is(err, blockchaininfo.ErrNotMainChain) {
 				log.Printf("WARN: block %s not in main chain", block.Hash)
-				return
+				os.Exit(1)
 			}
 
 			log.Fatalf("ERROR getting block: %v", err)
