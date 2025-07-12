@@ -46,8 +46,12 @@ func main() {
 		block, err := chainclient.BlockInfo(ctx, latestHash)
 		if err != nil {
 			if errors.Is(err, blockchaininfo.ErrNotMainChain) {
-				log.Printf("WARN: block %s not in main chain", block.Hash)
-				os.Exit(1)
+				if block.Hash != "" {
+					log.Printf("WARN: block %s not in main chain", block.Hash)
+					os.Exit(1)
+				}
+				log.Print("INFO: no more blocks found")
+				return
 			}
 
 			log.Fatalf("ERROR getting block: %v", err)
