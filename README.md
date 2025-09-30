@@ -52,4 +52,4 @@ These exceptionally rare blocks represent extraordinary instances of mining luck
 
 Created by <a href="https://github.com/adamdecaf">@adamdecaf</a>.
 
-Donate BTC to `36UswrkLjUPaSmfpRP2fPwVTDdc4JRCyhK`
+Donate BTC to `bc1qhqw7vlkw6wz5qkkcydq375xcp84rmexh0jtq6j`
