@@ -116,7 +116,17 @@ func (c *client) BlockInfo(ctx context.Context, hash string) (RawBlock, error) {
 	address := fmt.Sprintf("https://blockchain.info/rawblock/%s", hash)
 
 	for attempt := 0; attempt < maxRetries; attempt++ {
-		resp, err := c.httpClient.Get(address)
+		req, err := retryablehttp.NewRequestWithContext(ctx, "GET", address, nil)
+		if err != nil {
+			return RawBlock{}, fmt.Errorf("creating BlockInfo GET: %w", err)
+		}
+
+		req.Header.Set("Accept", "text/html")
+		req.Header.Set("Accept-Language", "en-US,en;q=0.7")
+		req.Header.Set("Cache-Control", "max-age=0")		
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36")
+		
+		resp, err := c.httpClient.Do(req)
 		if err != nil {
 			if strings.Contains(err.Error(), "context deadline exceeded") || strings.Contains(err.Error(), "Client.Timeout exceeded") {
 				if attempt < maxRetries-1 {
