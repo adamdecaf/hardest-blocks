@@ -47,14 +47,23 @@ func main() {
 		if err != nil {
 			if errors.Is(err, blockchaininfo.ErrNotMainChain) {
 				if block.Hash != "" {
-					log.Printf("WARN: block %s not in main chain", block.Hash)
-					os.Exit(1)
-				}
-				log.Print("INFO: no more blocks found")
-				return
-			}
+					log.Printf("WARN: block %s not in main chain, reverting to %s",
+						block.Hash, block.PreviousBlock)
 
-			log.Fatalf("ERROR getting block: %v", err)
+					// Fetch the prior block 
+					block, err = chainclient.BlockInfo(ctx, block.PreviousBlock)
+					if err != nil {
+						log.Printf("ERROR: reverting to previoys block: %v", err)
+						os.Exit(1)
+					}
+				} else {
+					log.Print("INFO: no more blocks found")
+					return
+				}
+			}
+			if err != nil {
+				log.Fatalf("ERROR getting block: %v", err)
+			}
 		}
 
 		if block.Hash == "" {
