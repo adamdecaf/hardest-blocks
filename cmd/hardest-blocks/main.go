@@ -67,7 +67,8 @@ func main() {
 			log.Fatalf("ERROR calculating block difficulty: %v", err)
 		}
 
-		log.Printf("INFO: found block %v (%v)", block.Hash, diff.Format())
+		log.Printf("INFO: found block %v (%v) %v (%v)",
+			block.Height, block.Time.Format(time.RFC3339), block.Hash, diff.Format())
 
 		// Add the block and sort, trim to our length
 		data.LargestDifficulties = append(data.LargestDifficulties, Block{
