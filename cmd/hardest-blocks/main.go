@@ -15,6 +15,7 @@ import (
 
 	"github.com/adamdecaf/bitaxe-stats/pkg/blockchain"
 	"github.com/adamdecaf/hardest-blocks/internal/blockchaininfo"
+	"github.com/adamdecaf/hardest-blocks/internal/notify"
 )
 
 const (
