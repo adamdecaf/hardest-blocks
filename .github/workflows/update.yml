@@ -26,6 +26,12 @@ jobs:
 
       - name: Run
         run: make generate
+        env:
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          FROM_NUMBER: ${{ secrets.FROM_NUMBER }}
+          TO_NUMBER: ${{ secrets.TO_NUMBER }}
+          INTERESTING_DIFFICULTY: "100T"
 
       - name: Commit updates
         run: |
