@@ -50,7 +50,7 @@ func main() {
 					log.Printf("WARN: block %s not in main chain, reverting to %s",
 						block.Hash, block.PreviousBlock)
 
-					// Fetch the prior block 
+					// Fetch the prior block
 					block, err = chainclient.BlockInfo(ctx, block.PreviousBlock)
 					if err != nil {
 						log.Printf("ERROR: reverting to previoys block: %v", err)
@@ -78,6 +78,8 @@ func main() {
 
 		log.Printf("INFO: found block %v (%v) %v (%v)",
 			block.Height, block.Time.Format(time.RFC3339), block.Hash, diff.Format())
+
+		notifyOnInterestingBlocks(block, diff)
 
 		// Add the block and sort, trim to our length
 		data.LargestDifficulties = append(data.LargestDifficulties, Block{
@@ -144,4 +146,39 @@ func readLatestData(path string) (Data, error) {
 		return Data{}, fmt.Errorf("json unmarshal of data: %w", err)
 	}
 	return data, nil
+}
+
+var (
+	needle          = cmp.Or(os.Getenv("INTERESTING_DIFFICULTY"), "1E")
+	interestingDiff = must(blockchain.ParseDifficulty(needle))
+)
+
+func notifyOnInterestingBlocks(block blockchaininfo.RawBlock, diff blockchain.Difficulty) {
+	if diff.RawValue < interestingDiff.RawValue {
+		return
+	}
+
+	var body bytes.Buffer
+	body.WriteString(fmt.Sprintf("hardestblocks: interesting block %v diff %v", block.Height, diff.Format()))
+	body.WriteString(" ")
+	body.WriteString(fmt.Sprintf("https://mempool.space/block/%v", block.Height))
+
+	config := notify.DefaultConfig()
+	message := notify.Message{
+		From: os.Getenv("FROM_NUMBER"),
+		To:   os.Getenv("TO_NUMBER"),
+		Body: body.String(),
+	}
+
+	err := notify.Send(config, message)
+	if err != nil {
+		log.Fatalf("ERROR: sending block diff notification: %w", err)
+	}
+}
+
+func must[T any](v T, err error) T {
+	if err != nil {
+		panic(err) //nolint:forbidigo
+	}
+	return v
 }
