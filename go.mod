@@ -3,7 +3,7 @@ module github.com/adamdecaf/hardest-blocks
 go 1.24.0
 
 require (
-	github.com/adamdecaf/bitaxe-stats v0.2.0
+	github.com/adamdecaf/bitaxe-stats v0.4.0
 	github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/stretchr/testify v1.10.0
 	github.com/twilio/twilio-go v1.23.8

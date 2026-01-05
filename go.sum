@@ -1,5 +1,5 @@
-github.com/adamdecaf/bitaxe-stats v0.2.0 h1:i0Gv2FyB0lFUaBGZB5lk/D3RCaskBnPLQfGo0hl95Cg=
-github.com/adamdecaf/bitaxe-stats v0.2.0/go.mod h1:NNeQmX7uF1o1j9FvHsq10oXW9WbN23tfvsbrK6GybBY=
+github.com/adamdecaf/bitaxe-stats v0.4.0 h1:2YpjpsqWHnNYHAexZ8r2mOHpHkkFg+Eyc06qKqca/NU=
+github.com/adamdecaf/bitaxe-stats v0.4.0/go.mod h1:NNeQmX7uF1o1j9FvHsq10oXW9WbN23tfvsbrK6GybBY=
 github.com/beevik/etree v1.1.0/go.mod h1:r8Aw8JqVegEf0w2fDnATrX9VpkMcyFeM0FhwO62wh+A=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
