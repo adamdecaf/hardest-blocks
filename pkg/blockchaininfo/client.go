@@ -15,6 +15,7 @@ import (
 )
 
 type Client interface {
+	LatestBlock(ctx context.Context) (RawBlock, error)
 	BlockInfo(ctx context.Context, hash string) (RawBlock, error)
 }
 
@@ -36,6 +37,57 @@ type client struct {
 	httpClient *retryablehttp.Client
 }
 
+type latestBlock struct {
+	Hash   string
+	Height int64
+	Time   time.Time
+}
+
+var (
+	possibleTimeFormats = []string{
+		time.RFC3339,
+		"2006-01-02T15:04:05-07:00",
+	}
+)
+
+func (r *latestBlock) UnmarshalJSON(data []byte) error {
+	var aux struct {
+		Hash   string `json:"hash"`
+		Height int64  `json:"height"`
+		Time   any    `json:"time"`
+	}
+
+	err := json.NewDecoder(bytes.NewReader(data)).Decode(&aux)
+	if err != nil {
+		return fmt.Errorf("reading latest block: %w", err)
+	}
+
+	r.Hash = aux.Hash
+	r.Height = aux.Height
+
+	switch t := aux.Time.(type) {
+	case string:
+		for _, format := range possibleTimeFormats {
+			r.Time, err = time.Parse(format, t)
+			if err == nil {
+				break
+			}
+		}
+
+	case float64:
+		r.Time = time.Unix(int64(t), 0)
+	case nil:
+		// do nothing
+	default:
+		return fmt.Errorf("unexpected time type: %T - %v", t, t)
+	}
+	if err != nil {
+		return fmt.Errorf("parsing time: %w", err)
+	}
+
+	return nil
+}
+
 type RawBlock struct {
 	Hash          string
 	PreviousBlock string
@@ -46,13 +98,6 @@ type RawBlock struct {
 	Time   time.Time
 	Height int64
 }
-
-var (
-	possibleTimeFormats = []string{
-		time.RFC3339,
-		"2006-01-02T15:04:05-07:00",
-	}
-)
 
 func (r *RawBlock) UnmarshalJSON(data []byte) error {
 	var aux struct {
@@ -112,6 +157,62 @@ var (
 	ErrNotMainChain = errors.New("block not in main chain")
 )
 
+func (c *client) LatestBlock(ctx context.Context) (RawBlock, error) {
+	latest, err := c.latestBlock(ctx)
+	if err != nil {
+		return RawBlock{}, err
+	}
+	return c.BlockInfo(ctx, latest.Hash)
+}
+
+func (c *client) latestBlock(ctx context.Context) (latestBlock, error) {
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		req, err := retryablehttp.NewRequestWithContext(ctx, "GET", "https://blockchain.info/latestblock", nil)
+		if err != nil {
+			return latestBlock{}, fmt.Errorf("creating BlockInfo GET: %w", err)
+		}
+
+		req.Header.Set("Accept", "text/html")
+		req.Header.Set("Accept-Language", "en-US,en;q=0.7")
+		req.Header.Set("Cache-Control", "max-age=0")
+		req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36")
+
+		resp, err := c.httpClient.Do(req)
+		if err != nil {
+			if strings.Contains(err.Error(), "context deadline exceeded") || strings.Contains(err.Error(), "Client.Timeout exceeded") {
+				if attempt < maxRetries-1 {
+					backoffDuration := baseDelay * time.Duration(1<<attempt)
+					time.Sleep(backoffDuration)
+					continue
+				}
+			}
+			return latestBlock{}, fmt.Errorf("getting block: %w", err)
+		}
+
+		defer resp.Body.Close()
+
+		var block latestBlock
+		err = json.NewDecoder(resp.Body).Decode(&block)
+		if err != nil {
+			switch {
+			case strings.Contains(err.Error(), "stream error"),
+				strings.Contains(err.Error(), "invalid character"),
+				strings.Contains(err.Error(), "unexpected EOF"):
+				if attempt < maxRetries-1 {
+					backoffDuration := baseDelay * time.Duration(1<<attempt)
+					time.Sleep(backoffDuration)
+					continue
+				}
+			}
+			return block, fmt.Errorf("decoding response: %w", err)
+		}
+
+		return block, nil
+	}
+
+	return latestBlock{}, errors.New("max retries exceeded for LatestBlock")
+}
+
 func (c *client) BlockInfo(ctx context.Context, hash string) (RawBlock, error) {
 	address := fmt.Sprintf("https://blockchain.info/rawblock/%s", hash)
 
@@ -123,9 +224,9 @@ func (c *client) BlockInfo(ctx context.Context, hash string) (RawBlock, error) {
 
 		req.Header.Set("Accept", "text/html")
 		req.Header.Set("Accept-Language", "en-US,en;q=0.7")
-		req.Header.Set("Cache-Control", "max-age=0")		
+		req.Header.Set("Cache-Control", "max-age=0")
 		req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36")
-		
+
 		resp, err := c.httpClient.Do(req)
 		if err != nil {
 			if strings.Contains(err.Error(), "context deadline exceeded") || strings.Contains(err.Error(), "Client.Timeout exceeded") {

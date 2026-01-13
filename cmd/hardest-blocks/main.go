@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/adamdecaf/bitaxe-stats/pkg/blockchain"
-	"github.com/adamdecaf/hardest-blocks/internal/blockchaininfo"
 	"github.com/adamdecaf/hardest-blocks/internal/notify"
+	"github.com/adamdecaf/hardest-blocks/pkg/blockchaininfo"
 )
 
 const (
@@ -173,7 +173,7 @@ func notifyOnInterestingBlocks(block blockchaininfo.RawBlock, diff blockchain.Di
 
 	err := notify.Send(config, message)
 	if err != nil {
-		log.Fatalf("ERROR: sending block diff notification: %w", err)
+		log.Fatalf("ERROR: sending block diff notification: %v", err)
 	}
 }
 
