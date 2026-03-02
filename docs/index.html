@@ -395,6 +395,7 @@
             pageBlocks.forEach(block => {
                 const blockDiv = document.createElement('div');
                 blockDiv.className = 'block-item';
+                blockDiv.id = `block-${block.Raw.Height}`;
 
                 const height = document.createElement('span');
                 height.className = 'height';
@@ -471,7 +472,26 @@
                     .then(data => {
                         allBlocks = data.LargestDifficulties;
                         totalPages = Math.ceil(allBlocks.length / BLOCKS_PER_PAGE);
+
+                        // Handle permalink
+                        const hash = window.location.hash;
+                        if (hash && hash.startsWith('#block-')) {
+                            const blockHeight = parseInt(hash.substring(7)); // Remove '#block-'
+                            const blockIndex = allBlocks.findIndex(block => block.Raw.Height === blockHeight);
+                            if (blockIndex !== -1) {
+                                currentPage = Math.floor(blockIndex / BLOCKS_PER_PAGE) + 1;
+                            }
+                        }
+
                         renderBlocks(allBlocks, currentPage);
+
+                        // Scroll to block if hash present
+                        if (hash && hash.startsWith('#block-')) {
+                            const element = document.getElementById(hash.substring(1));
+                            if (element) {
+                                element.scrollIntoView({ behavior: 'smooth' });
+                            }
+                        }
                     })
                     .catch(error => {
                         console.error('Error loading blocks:', error);
