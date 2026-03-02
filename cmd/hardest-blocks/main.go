@@ -91,7 +91,9 @@ func main() {
 		slices.SortFunc(data.LargestDifficulties, func(b1, b2 Block) int {
 			return -1 * cmp.Compare(b1.Difficulty.RawValue, b2.Difficulty.RawValue)
 		})
-		data.LargestDifficulties = slices.Compact(data.LargestDifficulties)
+		data.LargestDifficulties = slices.CompactFunc(data.LargestDifficulties, func(b1, b2 Block) bool {
+			return b1.Hash == b2.Hash
+		})
 
 		// Remove smaller difficulties
 		if len(data.LargestDifficulties) > blockHistory {
