@@ -82,11 +82,17 @@ func main() {
 
 		notifyOnInterestingBlocks(block, diff)
 
+		// Find network difficulty and over-achievement
+		networkDiff := findNetworkDifficulty(block.Height)
+		overAch := float64(diff.RawValue) / float64(networkDiff)
+
 		// Add the block and sort, trim to our length
 		data.LargestDifficulties = append(data.LargestDifficulties, Block{
-			Hash:       block.Hash,
-			Difficulty: diff,
-			Raw:        block,
+			Hash:              block.Hash,
+			Difficulty:        diff,
+			NetworkDifficulty: networkDiff,
+			OverAchievement:   overAch,
+			Raw:               block,
 		})
 		slices.SortFunc(data.LargestDifficulties, func(b1, b2 Block) int {
 			return -1 * cmp.Compare(b1.Difficulty.RawValue, b2.Difficulty.RawValue)
@@ -125,9 +131,11 @@ type Data struct {
 }
 
 type Block struct {
-	Hash       string
-	Difficulty blockchain.Difficulty
-	Raw        blockchaininfo.RawBlock
+	Hash              string
+	Difficulty        blockchain.Difficulty
+	NetworkDifficulty int64
+	OverAchievement   float64
+	Raw               blockchaininfo.RawBlock
 }
 
 func readFile(path string) (string, error) {

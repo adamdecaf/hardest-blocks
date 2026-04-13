@@ -423,6 +423,15 @@
                 const formattedDifficulty = formatDifficulty(block.Difficulty.RawValue.toString());
                 difficulty.textContent = `Difficulty: ${formattedDifficulty}`;
 
+                if (block.OverAchievement && block.OverAchievement > 1) {
+                    const networkDiff = formatDifficulty(block.NetworkDifficulty.toString());
+
+                    var overNetwork = document.createElement('span');
+                    overNetwork.style = 'font-size: 0.9em;';
+                    overNetwork.textContent += ` (${Number(block.OverAchievement.toFixed(2)).toLocaleString()}x over the network requirement of ${networkDiff})`;
+                    difficulty.appendChild(overNetwork);
+                }
+
                 blockDiv.appendChild(link);
                 blockDiv.appendChild(height);
                 blockDiv.appendChild(created);
@@ -516,6 +525,19 @@
                 console.error('Error loading WASM:', error);
                 document.getElementById('blockList').innerHTML =
                     '<div class="loading">Error loading WASM module</div>';
+            });
+
+        fetch('./LATEST')
+            .then(response => response.text())
+            .then(hash => {
+                const latestDiv = document.getElementById('latestBlock');
+                latestDiv.innerHTML = `Latest Block Analyzed: `;
+                latestDiv.innerHTML += `<a class="latest-hash" target="_blank" href="https://mempool.space/block/${hash.trim()}">${hash.trim()}</a>`;
+            })
+            .catch(error => {
+                console.error('Error loading latest block:', error);
+                document.getElementById('latestBlock').innerHTML =
+                    '<span class="loading">Error loading latest block</span>';
             });
     </script>
 </body>
