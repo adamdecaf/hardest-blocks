@@ -16,6 +16,7 @@ import (
 	"github.com/adamdecaf/bitaxe-stats/pkg/blockchain"
 	"github.com/adamdecaf/hardest-blocks/internal/notify"
 	"github.com/adamdecaf/hardest-blocks/pkg/blockchaininfo"
+	"github.com/adamdecaf/hardest-blocks/pkg/mempoolspace"
 )
 
 const (
@@ -144,6 +145,25 @@ func readFile(path string) (string, error) {
 		return "", fmt.Errorf("reading %s failed: %w", path, err)
 	}
 	return string(bytes.TrimSpace(bs)), nil
+}
+
+func findNetworkDifficulty(height int64) int64 {
+	adjustments, err := mempoolspace.EnsureDifficultyAdjustmentsCover(context.Background(), height)
+	if err != nil {
+		log.Fatalf("ERROR loading difficulty adjustments: %v", err)
+	}
+
+	// Find the most recent adjustment where Height <= height
+	var maxHeight int64 = -1
+	var networkDiff int64 = 0
+	for _, adj := range adjustments {
+		adjHeight := int64(adj.Height)
+		if adjHeight <= height && adjHeight > maxHeight {
+			maxHeight = adjHeight
+			networkDiff = int64(adj.Difficulty)
+		}
+	}
+	return networkDiff
 }
 
 func readLatestData(path string) (Data, error) {
