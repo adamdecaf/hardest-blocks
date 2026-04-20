@@ -90,7 +90,6 @@
             font-family: monospace;
             word-break: break-all;
             text-decoration: none;
-            font-size: 1rem;
             display: inline; /* Default: inline with height on desktop */
         }
 
@@ -102,7 +101,6 @@
         .height {
             color: #cccccc;
             font-size: 0.95rem;
-            float: right; /* Default: float to the right on desktop */
         }
 
         .created, .difficulty {
@@ -210,6 +208,10 @@
                 gap: 0.5rem;
             }
 
+            .block-item br {
+               display: none;
+            }
+
             .hash {
                 flex: 1 1 auto;
                 min-width: 0; /* Prevents overflow in flex */
@@ -217,6 +219,7 @@
 
             .height {
                 flex: 0 0 auto;
+                float: right;
             }
 
             .created, .difficulty {
@@ -227,10 +230,12 @@
                 flex: 1 0 100%;
             }
 
-        .intro-links {
+        .intro-links ul {
             display: flex;
             justify-content: center;
             gap: 20px;
+            list-style-type: none;
+            margin: 0;
         }
 
         #latestBlock {
@@ -264,12 +269,17 @@
                 clear: both;
             }
 
+            .block-item br {
+               display: block;
+            }
+
             .hash {
                 font-size: 0.9rem;
             }
 
             .height {
                 margin-top: 0.5rem;
+                float: none;
             }
 
             .created, .difficulty {
@@ -279,6 +289,14 @@
             .latest {
                 font-size: 0.9rem;
                 margin-bottom: 1.5rem;
+            }
+
+            .intro-links ul {
+                display: block;
+            }
+
+            .intro-links li {
+                margin-bottom: 10px;
             }
         }
     </style>
@@ -305,9 +323,11 @@
           </p>
         </div>
         <div class="intro intro-links">
-          <a href="https://mempool.space/mining" target="_blank">Network Mining Stats</a>
-          <a href="https://atlaspool.io/resources/articles/understanding-difficulty.html">What Does Difficulty Actually Mean?</a>
-          <a href="#open-source">Open Source Blocks</a>
+          <ul>
+            <li><a href="https://mempool.space/mining" target="_blank">Network Mining Stats</a></li>
+            <li><a href="https://atlaspool.io/resources/articles/understanding-difficulty.html">What Does Difficulty Actually Mean?</a></li>
+            <li><a href="#open-source">Open Source Blocks</a></li>
+          </ul>
         </div>
         <div class="latest" id="latestBlock">
         </div>
@@ -454,6 +474,8 @@
                     height.textContent = `Height: ${block.Raw.Height}`;
                 }
 
+                const br = document.createElement("br");
+
                 const link = document.createElement('a');
                 link.href = `https://mempool.space/block/${block.Hash}`;
                 link.className = 'hash';
@@ -484,6 +506,7 @@
                 }
 
                 blockDiv.appendChild(link);
+                blockDiv.appendChild(br);
                 blockDiv.appendChild(height);
                 blockDiv.appendChild(created);
                 blockDiv.appendChild(difficulty);
