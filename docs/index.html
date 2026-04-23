@@ -33,6 +33,11 @@
             font-weight: 600;
         }
 
+        h1 a {
+            color: inherit;
+            text-decoration: none;
+        }
+
         .intro {
             margin-bottom: 2rem;
             margin-top: 2rem;
@@ -303,7 +308,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Hardest Bitcoin Blocks</h1>
+        <h1><a href="#" onclick="location.hash=''; return false;">Hardest Bitcoin Blocks</a></h1>
         <div class="intro">
           <p>
             This list ranks Bitcoin blocks based on the difficulty of their hashes - the cryptographic puzzles miners solve to add blocks to the blockchain.
