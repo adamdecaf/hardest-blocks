@@ -33,10 +33,24 @@ func formatDifficulty(this js.Value, args []js.Value) interface{} {
 	return diff.Format()
 }
 
+func hashDifficulty(this js.Value, args []js.Value) interface{} {
+	if len(args) < 1 {
+		return "Error: please provide a string value"
+	}
+
+	diff, err := blockchain.HashDifficulty(args[0].String())
+	if err != nil {
+		return fmt.Sprintf("Error: %v", err)
+	}
+
+	return diff.Format()
+}
+
 func main() {
 	c := make(chan struct{}, 0)
 
 	js.Global().Set("formatDifficulty", js.FuncOf(formatDifficulty))
+	js.Global().Set("hashDifficulty", js.FuncOf(hashDifficulty))
 
 	<-c
 }

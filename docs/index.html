@@ -65,6 +65,10 @@
             margin-left: 1.5%;
         }
 
+        .open-hardware-intro {
+            display: none;
+        }
+
         .block-list {
             background-color: #262626;
             padding: 1.5rem;
@@ -331,8 +335,21 @@
           <ul>
             <li><a href="https://mempool.space/mining" target="_blank">Network Mining Stats</a></li>
             <li><a href="https://atlaspool.io/resources/articles/understanding-difficulty.html">What Does Difficulty Actually Mean?</a></li>
-            <li><a href="#open-source">Open Source Blocks</a></li>
+            <li><a href="#open-hardware">Open Hardware Blocks</a></li>
           </ul>
+        </div>
+        <div class="intro open-hardware-intro" style="display: none;">
+          <h3 style="text-align: center;">Open Hardware Blocks</h3>
+          <p>
+            Bitcoin mining began with open-source code running on everyday CPUs and GPUs. Over time, it evolved into a world dominated by closed-source software and proprietary hardware.
+
+            The <a href="https://www.bitaxe.org/" target="_blank">Bitaxe</a> changed that. It reopened the door for truly open software and hardware, allowing anyone to mine blocks without relying on closed, guarded knowledge.
+
+            The <a href="https://www.256foundation.org/" target="_blank">256 Foundation</a>
+            (<a href="https://github.com/256foundation" target="_blank">GitHub</a>) is leading the effort to make Bitcoin mining accessible to everyone again.
+
+            These blocks represent the beginning of a new era of decentralized, permissionless mining.
+          </p>
         </div>
         <div class="latest" id="latestBlock">
         </div>
@@ -428,7 +445,7 @@
 
         function handleHashChange() {
             const hash = window.location.hash;
-            if (hash === '#open-source') {
+            if (hash === '#open-hardware') {
                 loadOpenSourceBlocks();
             } else {
                 loadNormalBlocks();
@@ -554,6 +571,9 @@
         }
 
         function loadNormalBlocks() {
+            var elements = document.querySelectorAll(".open-hardware-intro");
+            elements.forEach( elm => { elm.style = "display: none;"; });
+
             fetch('./data.json')
                 .then(response => response.json())
                 .then(data => {
@@ -590,8 +610,11 @@
         }
 
         async function loadOpenSourceBlocks() {
+            var elements = document.querySelectorAll(".open-hardware-intro");
+            elements.forEach( elm => { elm.style = "display: block;"; });
+
             try {
-                const response = await fetch('https://raw.githubusercontent.com/adamdecaf/open-source-bitcoin-blocks/refs/heads/master/blocks.json');
+                const response = await fetch('https://raw.githubusercontent.com/adamdecaf/open-hardware-bitcoin-blocks/refs/heads/master/blocks.json');
                 const blocks = await response.json();
 
                 // Compute difficulties locally
@@ -610,8 +633,8 @@
                 currentPage = 1;
                 renderOpenSourceBlocks(allBlocks, currentPage);
             } catch (error) {
-                console.error('Error loading open source blocks:', error);
-                document.getElementById('blockList').innerHTML = '<div class="loading">Error loading open source blocks</div>';
+                console.error('Error loading open hardware blocks:', error);
+                document.getElementById('blockList').innerHTML = '<div class="loading">Error loading open hardware blocks</div>';
             }
         }
 
@@ -695,8 +718,9 @@
                     .then(response => response.text())
                     .then(hash => {
                         const latestDiv = document.getElementById('latestBlock');
-                        latestDiv.innerHTML = `Latest Block Analyzed: `;
+                        latestDiv.innerHTML = `Last Block Scanned: `;
                         latestDiv.innerHTML += `<a class="latest-hash" target="_blank" href="https://mempool.space/block/${hash.trim()}">${hash.trim()}</a>`;
+                        latestDiv.innerHTML += ` (${hashDifficulty(hash.trim())})`;
                     })
                     .catch(error => {
                         console.error('Error loading latest block:', error);
