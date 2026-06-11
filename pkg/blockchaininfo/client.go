@@ -21,7 +21,7 @@ type Client interface {
 
 func NewClient(httpClient *http.Client) Client {
 	httpClient = cmp.Or(httpClient, &http.Client{
-		Timeout: 20 * time.Second,
+		Timeout: 60 * time.Second,
 	})
 
 	cc := retryablehttp.NewClient()
